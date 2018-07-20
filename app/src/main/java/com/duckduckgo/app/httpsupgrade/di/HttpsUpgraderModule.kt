@@ -29,6 +29,7 @@ import javax.inject.Singleton
 @Module
 class HttpsUpgraderModule {
 
+    @Singleton
     @Provides
     fun httpsUpgrader(dao: HttpsUpgradeDomainDao): HttpsUpgrader {
         return HttpsUpgraderImpl(dao)

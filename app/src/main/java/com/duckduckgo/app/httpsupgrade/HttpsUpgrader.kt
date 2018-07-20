@@ -35,8 +35,24 @@ interface HttpsUpgrader {
 
 class HttpsUpgraderImpl constructor(private val dao: HttpsUpgradeDomainDao) :HttpsUpgrader {
 
+    private val httpsBloomFilter: BloomFilter
+
+    init {
+
+        val httpsData = javaClass
+            .getResourceAsStream("/res/raw/bloom_https_data")
+            .bufferedReader()
+            .readLines()
+
+        httpsBloomFilter = BloomFilter(httpsData.size,0.01)
+        httpsData.forEach { httpsBloomFilter.add(it) }
+    }
+
     @WorkerThread
     override fun shouldUpgrade(uri: Uri) : Boolean {
+
+        Timber.d("Bloom, should upgrade ${uri.host}: ${httpsBloomFilter.contains(uri.host)}")
+
         if (uri.isHttps) {
             return false
         }
@@ -67,5 +83,4 @@ class HttpsUpgraderImpl constructor(private val dao: HttpsUpgradeDomainDao) :Htt
 
         return false
     }
-
 }
