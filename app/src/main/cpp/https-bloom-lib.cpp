@@ -12,6 +12,22 @@ Java_com_duckduckgo_app_httpsupgrade_BloomFilter_createBloomFilter(JNIEnv *env,
     return (long) filter;
 }
 
+
+extern "C"
+JNIEXPORT long
+JNICALL
+Java_com_duckduckgo_app_httpsupgrade_BloomFilter_createBloomFilterFromFile(JNIEnv *env,
+                                                                   jobject,
+                                                                   jstring path,
+                                                                   jint maxItems) {
+    jboolean isElementCopy;
+    const char *pathChars = env->GetStringUTFChars(path, &isElementCopy);
+
+    BloomFilter* filter = new BloomFilter(pathChars, maxItems);
+    return (long) filter;
+}
+
+
 extern "C"
 JNIEXPORT void
 JNICALL

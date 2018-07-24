@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.app.trackerdetection.store
+package com.duckduckgo.app.global.store
 
 import android.content.Context
-import com.duckduckgo.app.trackerdetection.Client.ClientName
 import javax.inject.Inject
 
-class TrackerDataStore @Inject constructor(private val context: Context) {
+class BinaryDataStore @Inject constructor(private val context: Context) {
 
-    fun hasData(client: ClientName): Boolean = context.fileExists(client.name)
+    fun hasData(name: String): Boolean = context.fileExists(name)
 
-    fun loadData(client: ClientName): ByteArray =
-            context.openFileInput(client.name).use { it.readBytes() }
+    fun loadData(name: String): ByteArray =
+            context.openFileInput(name).use { it.readBytes() }
 
-    fun saveData(client: ClientName, byteArray: ByteArray) {
-        context.openFileOutput(client.name, Context.MODE_PRIVATE).write(byteArray)
+    fun saveData(name: String, byteArray: ByteArray) {
+        context.openFileOutput(name, Context.MODE_PRIVATE).write(byteArray)
     }
 
-    fun clearData(client: ClientName) {
-        context.deleteFile(client.name)
+    fun clearData(name: String) {
+        context.deleteFile(name)
     }
 
     private fun Context.fileExists(filename: String): Boolean {

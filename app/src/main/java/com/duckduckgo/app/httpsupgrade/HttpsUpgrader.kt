@@ -16,12 +16,13 @@
 
 package com.duckduckgo.app.httpsupgrade
 
+import android.content.Context
 import android.net.Uri
 import android.support.annotation.WorkerThread
 import com.duckduckgo.app.global.UrlScheme
 import com.duckduckgo.app.global.isHttps
-import com.duckduckgo.app.httpsupgrade.db.HttpsUpgradeDomainDao
 import timber.log.Timber
+import java.io.File
 
 interface HttpsUpgrader {
 
@@ -33,54 +34,31 @@ interface HttpsUpgrader {
     }
 }
 
-class HttpsUpgraderImpl constructor(private val dao: HttpsUpgradeDomainDao) :HttpsUpgrader {
+class HttpsUpgraderImpl(context: Context) :HttpsUpgrader {
 
-    private val httpsBloomFilter: BloomFilter
+    private var httpsBloomFilter: BloomFilter? = null
 
     init {
-
-        val httpsData = javaClass
-            .getResourceAsStream("/res/raw/bloom_https_data")
-            .bufferedReader()
-            .readLines()
-
-        httpsBloomFilter = BloomFilter(httpsData.size,0.01)
-        httpsData.forEach { httpsBloomFilter.add(it) }
+        val path = context.getFileStreamPath("HTTPS_BLOOM").path
+        if (File(path).exists()) {
+            httpsBloomFilter = BloomFilter(path, 2900000) //TODO get data from
+        }
     }
 
     @WorkerThread
     override fun shouldUpgrade(uri: Uri) : Boolean {
 
-        Timber.d("Bloom, should upgrade ${uri.host}: ${httpsBloomFilter.contains(uri.host)}")
-
         if (uri.isHttps) {
             return false
         }
 
-        val host = (uri.host ?: return false).toLowerCase()
-        return dao.hasDomain(host) || matchesWildcard(host)
-    }
-
-    private fun matchesWildcard(host: String): Boolean {
-        val domains = mutableListOf<String>()
-        for (part in host.split(".").reversed()) {
-            if (domains.isEmpty()) {
-                domains.add(".$part")
-            } else {
-                val last = domains.last()
-                domains.add(".$part$last")
-            }
-        }
-
-        domains.asReversed().removeAt(0)
-        Timber.d("domains $domains")
-
-        for (domain in domains) {
-            if (dao.hasDomain("*$domain")) {
-                return true
-            }
+        httpsBloomFilter?.let {
+            val shouldUpgrade = it.contains(uri.host)
+            Timber.d("Bloom, should upgrade ${uri.host}: $shouldUpgrade")
+            return shouldUpgrade
         }
 
         return false
     }
+
 }

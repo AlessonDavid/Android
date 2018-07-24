@@ -16,16 +16,29 @@
 
 package com.duckduckgo.app.httpsupgrade
 
-class BloomFilter(maxItems: Int, targetProbability: Double) {
+import java.io.BufferedOutputStream
+import java.io.InputStream
+
+class BloomFilter {
 
     private val nativePointer: Long
 
     init {
         System.loadLibrary("https-bloom-lib")
+    }
+
+    constructor(maxItems: Int, targetProbability: Double) {
         nativePointer = createBloomFilter(maxItems, targetProbability)
     }
 
+    constructor(path: String, maxItems: Int) {
+        nativePointer = createBloomFilterFromFile(path, maxItems)
+    }
+
     private external fun createBloomFilter(maxItems: Int, targetProbability: Double): Long
+
+    private external fun createBloomFilterFromFile(path: String, maxItems: Int): Long
+
 
     fun add(element: String) {
         add(nativePointer, element)

@@ -19,9 +19,6 @@ package com.duckduckgo.app.httpsupgrade.di
 import android.content.Context
 import com.duckduckgo.app.httpsupgrade.HttpsUpgrader
 import com.duckduckgo.app.httpsupgrade.HttpsUpgraderImpl
-import com.duckduckgo.app.httpsupgrade.db.HttpsUpgradeDbWriteStatusSharedPreferences
-import com.duckduckgo.app.httpsupgrade.db.HttpsUpgradeDbWriteStatusStore
-import com.duckduckgo.app.httpsupgrade.db.HttpsUpgradeDomainDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -31,13 +28,7 @@ class HttpsUpgraderModule {
 
     @Singleton
     @Provides
-    fun httpsUpgrader(dao: HttpsUpgradeDomainDao): HttpsUpgrader {
-        return HttpsUpgraderImpl(dao)
-    }
-
-    @Provides
-    @Singleton
-    fun httpsUpgradeDbWriteStatusStore(context: Context): HttpsUpgradeDbWriteStatusStore {
-        return HttpsUpgradeDbWriteStatusSharedPreferences(context)
+    fun httpsUpgrader(context: Context): HttpsUpgrader {
+        return HttpsUpgraderImpl(context)
     }
 }

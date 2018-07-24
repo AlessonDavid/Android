@@ -8,9 +8,6 @@
 #include <math.h>
 #include "BloomFilter.hpp"
 
-typedef char BlockType;
-typedef std::basic_istream<BlockType> BinaryInputStream;
-typedef std::basic_ostream<BlockType> BinaryOutputStream;
 
 // Forward declarations of free functions
 
@@ -48,6 +45,12 @@ BloomFilter::BloomFilter(unsigned int maxItems, double targetProbability)
 BloomFilter::BloomFilter(std::string importFilePath, unsigned int maxItems)
 {
     bloomVector = readVectorFromFile(importFilePath);
+    hashRounds = calculateHashRounds((unsigned int) bloomVector.size(), maxItems);
+}
+
+BloomFilter::BloomFilter(BinaryInputStream& in, unsigned int maxItems)
+{
+    bloomVector = readVectorFromStream(in);
     hashRounds = calculateHashRounds((unsigned int) bloomVector.size(), maxItems);
 }
 
@@ -123,6 +126,12 @@ unsigned int doubleHash(unsigned int hash1, unsigned int hash2, unsigned int rou
 void BloomFilter::writeToFile(std::string path)
 {
     std::basic_ofstream<BlockType> out(path.c_str(), std::ofstream::binary);
+    writeVectorToStream(bloomVector, out);
+}
+
+
+void BloomFilter::writeToStream(BinaryOutputStream& out)
+{
     writeVectorToStream(bloomVector, out);
 }
 
